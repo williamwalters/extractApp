@@ -82,6 +82,7 @@ if container2Cols[1].button("Prepare Clip for Download", on_click=None, use_cont
         yt_dlp.main([urlInput, '-f', 'best[height>=720]', '--download-sections', beginEnd, '-o', 'outPath.mp4'])
     except SystemExit:
         print("Download completed, but program was about to exit.")
+    print('outPath = ', os.path.dirname(os.path.realpath(__file__)) + '/outPath.mp4')
     with open("outPath.mp4", "rb") as file:
         btn = container2Cols[1].download_button(
                 label="Download Clip",
