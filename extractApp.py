@@ -9,6 +9,7 @@ import os
 import subprocess
 import moviepy.editor as mp
 from datetime import datetime, timedelta, time
+from pathlib import Path
 
 st.set_page_config(page_title="Extract Section from Video", page_icon="youtube", layout="wide")
 
@@ -74,15 +75,18 @@ cols[1].text('Choose Time Range: ' + str(extractRange[0]) + ' - ' + str(extractR
 container2 = st.container()
 container2Cols = container.columns(3)
 if container2Cols[1].button("Prepare Clip for Download", on_click=None, use_container_width=True):
-    if os.path.exists('outPath.mp4'):
-        os.remove('outPath.mp4')
+    
+    outPath = str(Path(os.path.dirname(os.path.realpath(__file__))).parent) + '/outPath.mp4'
+
+    if os.path.exists(outPath):
+        os.remove(outPath)
     beginEnd = '*'+str(extractRange[0])+'-'+str(extractRange[1])
     try:
     # Code for downloading the video goes here
-        yt_dlp.main([urlInput, '-f', 'best[height>=720]', '--download-sections', beginEnd, '-o', 'outPath.mp4'])
+        yt_dlp.main([urlInput, '-f', 'best[height>=720]', '--download-sections', beginEnd, '-o', outPath])
     except SystemExit:
         print("Download completed, but program was about to exit.")
-    outPath = os.path.dirname(os.path.realpath(__file__)) + '/outPath.mp4'
+    print('outPath: ', outPath)
     with open(outPath, "rb") as file:
         btn = container2Cols[1].download_button(
                 label="Download Clip",
