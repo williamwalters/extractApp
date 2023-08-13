@@ -1,15 +1,9 @@
-import streamlit as st
 from streamlit_player import st_player
-import numpy as np
-#import moviepy as mp
+import streamlit as st
 import yt_dlp
-from yt_dlp import YoutubeDL
-import pandas as pd
-import os
-import subprocess
-import moviepy.editor as mp
-from datetime import datetime, timedelta, time
-from pathlib import Path
+#import moviepy.editor as mp
+from datetime import timedelta, time
+#from pathlib import Path
 
 st.set_page_config(page_title="Extract Section from Video", page_icon="youtube", layout="wide")
 
@@ -32,9 +26,10 @@ def extractClip(beginTime, endTime):
     except SystemExit:
         print("Download completed, but program was about to exit.")
 
+
 def main(url):
     vidPlayer = st_player(url)
-    
+
 if urlInput[:4] != 'http':
     main(video_url)
     print('main ', urlInput)
@@ -62,28 +57,21 @@ container = st.container()
 cols = container.columns(3)
 cols[1].text('Choose Time Range: ' + str(extractRange[0]) + ' - ' + str(extractRange[1]))
 
-#container = st.container()
-#cols = container.columns(3)
-#cols[0].text('Start Time: ')
-#cols[1].text('Choose Time Range: ' + str(extractRange[0]) + ' - ' + str(extractRange[1]))
-#cols[2].write('Choose Time Range to Extract: ', extractRange[0], ' to ', extractRange[1])
-#st.write('Choose Time Range to Extract: ', extractRange[0], ' to ', extractRange[1])
-#dButton = st.button("download", on_click=printSection(extractRange[0], extractRange[1]))
-#yt_dlp.main([video_url, '-f', 'best[height>=720]', '--download-sections', beginEnd, '-o', 'outPath.mp4'])
-
-
 container2 = st.container()
 container2Cols = container.columns(3)
 if container2Cols[1].button("Prepare Clip for Download", on_click=None, use_container_width=True):
     
-    outPath = str(Path(os.path.dirname(os.path.realpath(__file__))).parent) + '/outPath.mp4'
+    outPath = 'outPath.mp4'
+    #str(Path(os.path.dirname(os.path.realpath(__file__))).parent) + '/outPath.mp4'
 
     if os.path.exists(outPath):
         os.remove(outPath)
     beginEnd = '*'+str(extractRange[0])+'-'+str(extractRange[1])
     try:
-    # Code for downloading the video goes here
-        yt_dlp.main([urlInput, '-f', 'best[height>=720]', '--download-sections', beginEnd, '-o', outPath])
+    # Code for downloading the video goes= here
+        #yt_dlp.main([urlInput, '-f', 'best[height>720]', '--download-sections', beginEnd, '-o', outPath])
+        yt_dlp.main([urlInput, '-f', '137+140', '--merge-output-format', 'mp4', '--download-sections', beginEnd, '-o', outPath, '--ignore-no-formats-error'])
+        #yt_dlp.main([urlInput, '-f', 'best[height>720]', '--merge-output-format',  'mp4', '--download-sections', beginEnd, '-o', outPath, '--yes-playlist', '--ignore-no-formats-error'])
     except SystemExit:
         print("Download completed, but program was about to exit.")
     print('outPath: ', outPath)
