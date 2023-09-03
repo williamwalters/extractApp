@@ -1,9 +1,10 @@
 from streamlit_player import st_player
 import streamlit as st
 import yt_dlp
-#import moviepy.editor as mp
+
 from datetime import timedelta, time
-#from pathlib import Path
+import os
+
 
 st.set_page_config(page_title="Extract Section from Video", page_icon="youtube", layout="wide")
 
@@ -32,12 +33,10 @@ def main(url):
 
 if urlInput[:4] != 'http':
     main(video_url)
-    print('main ', urlInput)
     ydl = yt_dlp.YoutubeDL({})
     video_info = ydl.extract_info(video_url, download=False)
 elif urlInput[:4] == 'http':
     main(urlInput)
-    print('main elif', urlInput)
     ydl = yt_dlp.YoutubeDL({})
     video_info = ydl.extract_info(urlInput, download=False)
 
@@ -85,41 +84,3 @@ if container2Cols[1].button("Prepare Clip for Download", on_click=None, use_cont
                 use_container_width=True
               )
 
-
-
-
-#with open("outPath.mp4", "rb") as file:
-#    btn = st.download_button(
-#            label="a do it",
-#            data=file,
-#            file_name="extracted.mp4",
-#            on_click=extractClip(extractRange[0], extractRange[1]), #printSection(extractRange[0], extractRange[1]),
-#            mime="video/mp4"
-#          )
-#elif not os.path.exists('outPath.mp4'):
-#    st.button("set selection", on_click=printSection(extractRange[0], extractRange[1]))
-    #printSection(extractRange[0], extractRange[1])
-#    with open("outPath.mp4", "rb") as file:
-#printSection(extractRange[0], extractRange[1])
-#        btn = st.download_button(
-#                label="a download",
-#                data=file,
-#                file_name="extracted.mp4",
-#                on_click=printSection(extractRange[0], extractRange[1]),
-#                mime="video/mp4"
-#              )
-    #ytdlp.main([video_url, '-f', 'best[height>=720]', '--download-sections', beginEnd, '-o', 'outPath.mp4'])
-    #with open("outPath.mp4", "rb") as file:
-    #print('something after yt downloead')
-#else:
-#    None
-
-#dlData = yt_dlp.main([video_url, '-f', 'best[height>=720]', '--download-sections', beginEnd, '-o', 'outPathD.mp4'])
-#dButtoon = st.download_button(label="Download", data='outPathD.mp4', file_name="outPath2.mp4", 
-#                              mime="video/mp4", key=None, help=None, on_click = printSection(extractRange[0], extractRange[1]), 
-#                              args=None, kwargs=None)
-
-
-#st.download_button(label="Download", data=printSection(extractRange[0], extractRange[1]), file_name="outPath2.mp4", mime="video/mp4", key=None, help=None, args=None, kwargs=None)
-#st.download_button(label="Download", data='outPath.mp4', file_name="outPath2.mp4", mime=mp4, key=None, help=None, args=None, kwargs=None)
-#st.button("download", on_click=printSection(extractRange[0], extractRange[1]))
