@@ -5,7 +5,9 @@ import yt_dlp
 from datetime import timedelta, time
 import os
 
-
+#print('||||||||||||||||||||||')
+#print((os.path.dirname(st.file)))
+#print('||||||||||||||||||||||')
 st.set_page_config(page_title="Extract Section from Video", page_icon="youtube", layout="wide")
 
 if 'num' not in st.session_state:
@@ -68,9 +70,9 @@ if container2Cols[1].button("Prepare Clip for Download", on_click=None, use_cont
     beginEnd = '*'+str(extractRange[0])+'-'+str(extractRange[1])
     try:
     # Code for downloading the video goes= here
-        yt_dlp.main([urlInput, '-f', 'best[height>=720]', '--download-sections', beginEnd, '-o', 'outPath.mp4'])
+        #yt_dlp.main([urlInput, '-f', 'best[height>=720]', '--download-sections', beginEnd, '-o', 'outPath.mp4', '-v', 'True'])
         #yt_dlp.main([urlInput, '-f', 'best[height>720]', '--download-sections', beginEnd, '-o', outPath])
-        #yt_dlp.main([urlInput, '-f', '137+140', '--merge-output-format', 'mp4', '--download-sections', beginEnd, '-o', outPath, '--ignore-no-formats-error'])
+        yt_dlp.main([urlInput, '-f', '137+140', '--merge-output-format', 'mp4', '--download-sections', beginEnd, '-o', outPath, '--ignore-no-formats-error'])
         #yt_dlp.main([urlInput, '-f', 'best[height>720]', '--merge-output-format',  'mp4', '--download-sections', beginEnd, '-o', outPath, '--yes-playlist', '--ignore-no-formats-error'])
     except SystemExit:
         print("Download completed, but program was about to exit.")
