@@ -1,15 +1,38 @@
 from streamlit_player import st_player
 import streamlit as st
+import threading
 import yt_dlp
-
+import uuid
+import time as t
+import subprocess
 from datetime import timedelta, time
+import sys
 import os
 
-#print('||||||||||||||||||||||')
-#print((os.path.dirname(st.file)))
-#print('||||||||||||||||||||||')
+
 st.set_page_config(page_title="Extract Section from Video", page_icon="youtube", layout="wide")
 
+
+# ======================== This  section will remove the hamburger and watermark and footer and header from streamlit ===========
+hide_streamlit_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            # header {visibility: hidden;}
+            footer:after {
+                            content:''; 
+	                        visibility: visible;
+	                        display: block;
+	                        position: relative;
+	                        #background-color: red;
+	                        padding: 5px;
+	                        top: 2px;
+                        }
+            </style>
+            """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
+# not sure what session state is for
 if 'num' not in st.session_state:
     st.session_state.num = 1
 if 'data' not in st.session_state:
@@ -19,29 +42,31 @@ video_url = 'https://www.youtube.com/watch?v=dLk9pzmaFHY'
 
 urlInput = st.text_input(' ', value='input url here:', max_chars=None, key=None, type='default', help=None, args=None, kwargs=None)
  
+def display_vid(url):
+    #vidPlayer = st_player(url)
+    vidPlayer = st.video(url)
 
-def extractClip(beginTime, endTime):
-    if os.path.exists('outPath.mp4'):
-        os.remove('outPath.mp4')
-    try:
-    # Code for downloading the video goes here
-        yt_dlp.main([video_url, '-f', 'best[height>=720]', '--download-sections', beginEnd, '-o', 'outPath.mp4'])
-    except SystemExit:
-        print("Download completed, but program was about to exit.")
-
-
-def main(url):
-    vidPlayer = st_player(url)
+def run_subprocess(command, done_flag):
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    stdout, stderr = process.communicate()
+    done_flag["done"] = True
+    return stdout, stderr, process.returncode
 
 if urlInput[:4] != 'http':
-    main(video_url)
+    display_vid(video_url)
     ydl = yt_dlp.YoutubeDL({})
     video_info = ydl.extract_info(video_url, download=False)
+
 elif urlInput[:4] == 'http':
-    main(urlInput)
+    display_vid(urlInput)
     ydl = yt_dlp.YoutubeDL({})
     video_info = ydl.extract_info(urlInput, download=False)
 
+def get_len_seconds(t_one, t_two):
+    """Convert a datetime.time object to seconds since midnight."""
+    t_one_seconds =  t_one.hour * 3600 + t_one.minute * 60 + t_one.second
+    t_two_seconds =  t_two.hour * 3600 + t_two.minute * 60 + t_two.second
+    return t_one_seconds - t_two_seconds
 
 hmsString = video_info.get('duration_string').split(':')
 if len(hmsString) == 3:
@@ -54,36 +79,61 @@ elif len(hmsString) == 1:
 extractRange = st.slider('', vidTime.min, value=(vidTime.min, vidTime), 
                          max_value=vidTime, step=timedelta(seconds=1), format = 'HH:mm:ss')
 
+# container creates the layout of the page element, the choose time text goes in the middle column
 container = st.container()
 cols = container.columns(3)
 cols[1].text('Choose Time Range: ' + str(extractRange[0]) + ' - ' + str(extractRange[1]))
 
+
+# container creates the layout of the page element, the prepare button goes in the middle column
 container2 = st.container()
 container2Cols = container.columns(3)
+
+
 if container2Cols[1].button("Prepare Clip for Download", on_click=None, use_container_width=True):
-    
-    outPath = 'outPath.mp4'
-    #str(Path(os.path.dirname(os.path.realpath(__file__))).parent) + '/outPath.mp4'
+    outPath = f'{str(uuid.uuid4().hex)}.mp4'
 
     if os.path.exists(outPath):
         os.remove(outPath)
     beginEnd = '*'+str(extractRange[0])+'-'+str(extractRange[1])
-    try:
-    # Code for downloading the video goes= here
-        #yt_dlp.main([urlInput, '-f', 'best[height>=720]', '--download-sections', beginEnd, '-o', 'outPath.mp4', '-v', 'True'])
-        #yt_dlp.main([urlInput, '-f', 'best[height>720]', '--download-sections', beginEnd, '-o', outPath])
-        yt_dlp.main([urlInput, '-f', '137+140', '--merge-output-format', 'mp4', '--download-sections', beginEnd, '-o', outPath, '--ignore-no-formats-error'])
-        #yt_dlp.main([urlInput, '-f', 'best[height>720]', '--merge-output-format',  'mp4', '--download-sections', beginEnd, '-o', outPath, '--yes-playlist', '--ignore-no-formats-error'])
-    except SystemExit:
-        print("Download completed, but program was about to exit.")
-    print('outPath: ', outPath)
+    
+    extract_len = get_len_seconds(extractRange[1], extractRange[0])
+    print('beginEnd: ', beginEnd, 'extract len ', extract_len)
+    status = st.empty()
+    
+    command = [sys.executable, '-m', 'yt_dlp', urlInput, '-f', '137+140', '--merge-output-format', 'mp4', '--download-sections', beginEnd, '-o', outPath, '--ignore-no-formats-error']
+
+    # Create a thread to run the subprocess
+    done_flag = {'done': False}
+    subprocess_thread = threading.Thread(target=run_subprocess, args=(command, done_flag))
+
+    # Start the thread
+    subprocess_thread.start()
+    start_time = t.time()
+    last_time = None
+    p_bar = st.progress(0)
+    while not done_flag['done']:
+        elapsed_time = t.time() - start_time
+        if int(elapsed_time) != last_time:
+            p_bar.progress(elapsed_time/extract_len)
+            last_time = int(elapsed_time)
+    p_bar.progress(100)
+
+    subprocess_thread.join()
+
+    print('temp file name: ', outPath)
     with open(outPath, "rb") as file:
         btn = container2Cols[1].download_button(
                 label="Download Clip",
                 data=file,
-                file_name="extracted.mp4",
+                file_name=outPath,
                 #on_click=extractClip(extractRange[0], extractRange[1]), #printSection(extractRange[0], extractRange[1]),
                 mime="video/mp4",
                 use_container_width=True
               )
+    status.empty()
+    edit_container = st.container()
+    editor_cols = edit_container.columns(1)
+    editor_cols[0].video(outPath)
+    
 
