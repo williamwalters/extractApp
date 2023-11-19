@@ -122,6 +122,7 @@ if container2Cols[1].button("Prepare Clip for Download", on_click=None, use_cont
     subprocess_thread.join()
 
     print('temp file name: ', outPath)
+    print('current wk dir: ', os.getcwd())
     with open(outPath, "rb") as file:
         btn = container2Cols[1].download_button(
                 label="Download Clip",
