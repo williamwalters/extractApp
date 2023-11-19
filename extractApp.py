@@ -115,9 +115,14 @@ if container2Cols[1].button("Prepare Clip for Download", on_click=None, use_cont
     while not done_flag['done']:
         elapsed_time = t.time() - start_time
         if int(elapsed_time) != last_time:
+            #download_speed = os.path.getsize(outPath)/elapsed_time
+            download_progress = elapsed_time/extract_len
+            print(download_progress)
+            if download_progress > 1.0:
+                download_progress = 1.0
             p_bar.progress(elapsed_time/extract_len)
             last_time = int(elapsed_time)
-    p_bar.progress(100)
+    p_bar.progress(1.0)
 
     subprocess_thread.join()
 
