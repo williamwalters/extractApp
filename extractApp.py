@@ -10,7 +10,7 @@ import sys
 import os
 
 
-st.set_page_config(page_title="Extract Section from Video", page_icon="youtube", layout="wide")
+st.set_page_config(page_title="Extract Section from Video", page_icon="🎬", layout="wide")
 
 
 # ======================== This  section will remove the hamburger and watermark and footer and header from streamlit ===========
@@ -90,8 +90,8 @@ container2 = st.container()
 container2Cols = container.columns(3)
 
 
-if container2Cols[1].button("Prepare Clip for Download", on_click=None, use_container_width=True):
-    outPath = f'{str(uuid.uuid4().hex)}.mp4'
+if container2Cols[1].button("Extract from Web", on_click=None, use_container_width=True):
+    outPath = f'{video_info.get("title").split(" ")[0]}_{str(uuid.uuid4().hex)[-4:]}.mp4'
 
     if os.path.exists(outPath):
         os.remove(outPath)
@@ -126,8 +126,6 @@ if container2Cols[1].button("Prepare Clip for Download", on_click=None, use_cont
 
     subprocess_thread.join()
 
-    print('temp file name: ', outPath)
-    print('current wk dir: ', os.getcwd())
     with open(outPath, "rb") as file:
         btn = container2Cols[1].download_button(
                 label="Download Clip",
@@ -141,3 +139,5 @@ if container2Cols[1].button("Prepare Clip for Download", on_click=None, use_cont
     edit_container = st.container()
     editor_cols = edit_container.columns(1)
     editor_cols[0].video(outPath)
+
+    os.remove(outPath)
