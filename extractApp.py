@@ -43,7 +43,7 @@ def run_page():
     if 'data' not in st.session_state:
         st.session_state.data = []
 
-    video_url = 'https://www.youtube.com/watch?v=dLk9pzmaFHY'
+    video_url = 'https://www.youtube.com/watch?v=wusnhJpxdL8'
 
     urlInput = st.text_input(' ', value='input url here:', max_chars=None, key=None, type='default', help=None, args=None, kwargs=None)
     
